@@ -28,12 +28,6 @@ macOS-only menu bar app (no dock icon — `LSUIElement=YES`). SwiftUI lifecycle 
 - AppDelegate uses `withObservationTracking` (re-registered on each fire) to (a) update the `NSStatusItem` title and (b) re-register the Carbon hot key when `settings.hotkey` changes.
 - Persistence: `UserDefaults` + `JSONEncoder/JSONDecoder`. No Core Data.
 
-### Global hotkey
-
-- `Helpers/GlobalHotkey.swift` wraps Carbon `RegisterEventHotKey` (no SPM dependency). `HotkeyCombo` stores `keyCode` + `carbonModifiers` (`controlKey | optionKey | …`) and renders a glyph string for the UI.
-- `Views/HotkeyRecorderView.swift` captures the next keypress via `NSEvent.addLocalMonitorForEvents(.keyDown)`. Only commits combos that include at least one modifier. Escape cancels recording.
-- AppDelegate's `applicationShouldTerminate(_:)` shows an `NSAlert` (not `.confirmationDialog`) the first time the app quits, with a "Don't ask again" checkbox; the flag persists in `AppSettings.hasShownQuitConfirmation`.
-
 ### View hierarchy
 
 - `ContentView` — thin router between `TodoListView` and `SettingsView`. Applies `.preferredColorScheme(settings.theme.colorScheme)` for the System/Light/Dark theme picker.

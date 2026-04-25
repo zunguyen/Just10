@@ -90,9 +90,11 @@ struct TodoListView: View {
         .transition(.opacity)
     }
 
-    private var activeList: some View {
+    @ViewBuilder private var activeList: some View {
+        let activeTodos = store.activeTodos
+
         Group {
-            if store.activeTodos.isEmpty {
+            if activeTodos.isEmpty {
                 Spacer()
                 Text("Create your new todo")
                     .font(Typography.body)
@@ -107,7 +109,7 @@ struct TodoListView: View {
 
                     ScrollView {
                         LazyVStack(spacing: 0) {
-                            ForEach(store.activeTodos) { item in
+                            ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
                                 TodoRowView(
                                     item: item,
                                     onToggle: { store.toggle(item) },
@@ -116,7 +118,8 @@ struct TodoListView: View {
                                     onMoveUp: { store.moveActive(item, by: -1) },
                                     onMoveDown: { store.moveActive(item, by: 1) },
                                     editingItemId: $editingItemId,
-                                    focusedItemId: $focusedItemId
+                                    focusedItemId: $focusedItemId,
+                                    isReordering: draggedItem != nil
                                 )
                                 .opacity(draggedItem?.id == item.id ? 0.4 : 1.0)
                                 .overlay(alignment: dropIndicatorAlignment(for: item.id)) {
@@ -139,7 +142,7 @@ struct TodoListView: View {
                                         dropIndicator: $dropIndicator
                                     )
                                 )
-                                if item.id != store.activeTodos.last?.id {
+                                if index < activeTodos.count - 1 {
                                     Divider().padding(.leading, 36).opacity(0.3)
                                 }
                             }

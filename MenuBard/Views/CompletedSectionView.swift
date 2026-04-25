@@ -7,17 +7,19 @@ struct CompletedSectionView: View {
     @State private var isConfirmingClear = false
 
     var body: some View {
+        let completedTodos = store.completedTodos
+
         VStack(spacing: 0) {
             header
             if isExpanded {
                 Divider().opacity(0.4)
-                ForEach(store.completedTodos) { item in
+                ForEach(Array(completedTodos.enumerated()), id: \.element.id) { index, item in
                     TodoRowView(
                         item: item,
                         onToggle: { store.toggle(item) },
                         onDelete: { store.delete(item) }
                     )
-                    if item.id != store.completedTodos.last?.id {
+                    if index < completedTodos.count - 1 {
                         Divider().padding(.leading, 36).opacity(0.3)
                     }
                 }

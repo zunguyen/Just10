@@ -19,6 +19,7 @@ struct TodoRowView: View {
     var onMoveDown: (() -> Void)? = nil
     var editingItemId: Binding<UUID?> = .constant(nil)
     var focusedItemId: FocusState<UUID?>.Binding? = nil
+    var isReordering = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
@@ -41,10 +42,19 @@ struct TodoRowView: View {
         .contentShape(Rectangle())
         .background(rowBackground)
         .onHover { hovered in
+            guard !isReordering else {
+                isHovered = false
+                return
+            }
             if reduceMotion {
                 isHovered = hovered
             } else {
                 withAnimation(.easeInOut(duration: 0.1)) { isHovered = hovered }
+            }
+        }
+        .onChange(of: isReordering) { _, nowReordering in
+            if nowReordering {
+                isHovered = false
             }
         }
         .onChange(of: isEditing) { _, nowEditing in
@@ -101,9 +111,8 @@ struct TodoRowView: View {
         Button(action: onToggle) {
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(item.isCompleted ? Color.secondary : Color.accentColor)
-                .font(.system(size: 17))
+                .font(.system(size: 16))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.top, Layout.checkboxTopInset)
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: item.isCompleted)
         }
         .buttonStyle(.plain)
@@ -120,7 +129,7 @@ struct TodoRowView: View {
         } else {
             Image(systemName: "line.3.horizontal")
                 .foregroundStyle(.tertiary)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
                 .frame(width: Layout.dragHandleWidth, height: Layout.firstLineHeight, alignment: .topLeading)
                 .padding(.top, Layout.dragHandleTopInset)
                 .accessibilityLabel("Drag to reorder")
@@ -158,7 +167,7 @@ struct TodoRowView: View {
     @ViewBuilder
     private var trailingControls: some View {
         Group {
-            if !isEditing && isHovered {
+            if !isEditing && !isReordering && isHovered {
                 Button(action: onDelete) {
                     Image(systemName: "xmark")
                         .foregroundStyle(.secondary)
