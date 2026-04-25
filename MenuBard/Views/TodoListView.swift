@@ -8,11 +8,13 @@ struct TodoListView: View {
     @StateObject private var dragSession = DragSession()
     @State private var editingItemId: UUID?
     @State private var showCapWarning = false
+    @State private var isConfirmingClearCompleted = false
     @FocusState private var isTextFieldFocused: Bool
 
     private var activeCount: Int { store.activeTodos.count }
     private var atCap: Bool { store.isAtActiveCap }
     private var nearCap: Bool { activeCount >= 8 }
+    private var hasCompleted: Bool { !store.completedTodos.isEmpty }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,10 +23,9 @@ struct TodoListView: View {
                 capMessage
             }
             Divider().opacity(0.5)
-            activeList
-            if !store.completedTodos.isEmpty {
-                Divider().opacity(0.5)
-                CompletedSectionView()
+            todoList
+            if hasCompleted {
+                clearCompletedButton
             }
             Divider().opacity(0.5)
             footer
@@ -34,6 +35,9 @@ struct TodoListView: View {
             if newCount < TodoStore.activeCap, showCapWarning {
                 showCapWarning = false
             }
+        }
+        .onChange(of: hasCompleted) { _, nowHasCompleted in
+            if !nowHasCompleted { isConfirmingClearCompleted = false }
         }
         .onChange(of: dragSession.draggedItemId) { _, draggedId in
             if draggedId == nil {
@@ -86,13 +90,14 @@ struct TodoListView: View {
         .transition(.opacity)
     }
 
-    @ViewBuilder private var activeList: some View {
+    @ViewBuilder private var todoList: some View {
         let activeTodos = store.activeTodos
+        let completedTodos = store.completedTodos
         let draggedItemId = dragSession.draggedItemId
         let dropIndicator = dragSession.dropIndicator
 
         Group {
-            if activeTodos.isEmpty {
+            if activeTodos.isEmpty && completedTodos.isEmpty {
                 Spacer()
                 Text("Create your new todo")
                     .font(Typography.body)
@@ -122,10 +127,49 @@ struct TodoListView: View {
                                 )
                                 .equatable()
                             }
+                            ForEach(completedTodos) { item in
+                                TodoRowView(
+                                    item: item,
+                                    onToggle: { store.toggle(item) },
+                                    onDelete: { store.delete(item) }
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder private var clearCompletedButton: some View {
+        if isConfirmingClearCompleted {
+            HStack(spacing: 12) {
+                Button("Confirm") {
+                    store.deleteCompleted()
+                    isConfirmingClearCompleted = false
+                }
+                .font(Typography.secondary)
+                .foregroundStyle(.red)
+                .buttonStyle(.plain)
+                .accessibilityLabel("Confirm clear completed todos")
+
+                Button("Cancel") { isConfirmingClearCompleted = false }
+                    .font(Typography.secondary)
+                    .foregroundStyle(.secondary)
+                    .buttonStyle(.plain)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+        } else {
+            Button("Clear completed") {
+                withAnimation(.easeInOut(duration: 0.15)) { isConfirmingClearCompleted = true }
+            }
+            .font(Typography.secondary)
+            .foregroundStyle(.secondary)
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+            .accessibilityLabel("Clear completed todos")
         }
     }
 

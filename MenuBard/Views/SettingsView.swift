@@ -1,13 +1,10 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(TodoStore.self) private var store
     @Environment(AppSettings.self) private var settings
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onDismiss: () -> Void
 
     @State private var launchAtLogin = LoginItemManager.shared.isEnabled
-    @State private var isConfirmingClear = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,8 +13,6 @@ struct SettingsView: View {
             launchAtLoginRow
             Divider().opacity(0.5)
             themeRow
-            Divider().opacity(0.5)
-            clearAllRow
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -80,47 +75,4 @@ struct SettingsView: View {
         .padding(.vertical, 12)
     }
 
-    private var clearAllRow: some View {
-        HStack {
-            Text("Clear all todos").font(Typography.body)
-            Spacer()
-            clearControl
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
-    }
-
-    @ViewBuilder
-    private var clearControl: some View {
-        if isConfirmingClear {
-            HStack(spacing: 12) {
-                Button("Confirm") {
-                    store.clearAll()
-                    isConfirmingClear = false
-                    onDismiss()
-                }
-                .font(Typography.body)
-                .foregroundStyle(.red)
-                .buttonStyle(.plain)
-                .accessibilityLabel("Confirm clear all todos")
-
-                Button("Cancel") { isConfirmingClear = false }
-                    .font(Typography.body)
-                    .foregroundStyle(.secondary)
-                    .buttonStyle(.plain)
-            }
-        } else {
-            Button("Clear") {
-                if reduceMotion {
-                    isConfirmingClear = true
-                } else {
-                    withAnimation(.easeInOut(duration: 0.15)) { isConfirmingClear = true }
-                }
-            }
-            .font(Typography.body)
-            .foregroundStyle(.red)
-            .buttonStyle(.plain)
-            .accessibilityLabel("Clear all todos")
-        }
-    }
 }

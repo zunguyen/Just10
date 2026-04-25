@@ -13,7 +13,6 @@
 		2A00000000000000000004 /* TodoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000004 /* TodoStore.swift */; };
 		2A00000000000000000005 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000005 /* ContentView.swift */; };
 		2A00000000000000000006 /* TodoRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000006 /* TodoRowView.swift */; };
-		2A00000000000000000007 /* CompletedSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000007 /* CompletedSectionView.swift */; };
 		2A00000000000000000008 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000008 /* SettingsView.swift */; };
 		2A00000000000000000009 /* LoginItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000009 /* LoginItemManager.swift */; };
 		2A00000000000000000010 /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000010 /* TodoListView.swift */; };
@@ -32,7 +31,6 @@
 		1A00000000000000000004 /* TodoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoStore.swift; sourceTree = "<group>"; };
 		1A00000000000000000005 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1A00000000000000000006 /* TodoRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoRowView.swift; sourceTree = "<group>"; };
-		1A00000000000000000007 /* CompletedSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedSectionView.swift; sourceTree = "<group>"; };
 		1A00000000000000000008 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1A00000000000000000009 /* LoginItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemManager.swift; sourceTree = "<group>"; };
 		1A0000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -101,7 +99,6 @@
 			children = (
 				1A00000000000000000005 /* ContentView.swift */,
 				1A00000000000000000006 /* TodoRowView.swift */,
-				1A00000000000000000007 /* CompletedSectionView.swift */,
 				1A00000000000000000008 /* SettingsView.swift */,
 				1A00000000000000000010 /* TodoListView.swift */,
 				1A00000000000000000011 /* TodoDropDelegate.swift */,
@@ -203,7 +200,6 @@
 				2A00000000000000000004 /* TodoStore.swift in Sources */,
 				2A00000000000000000005 /* ContentView.swift in Sources */,
 				2A00000000000000000006 /* TodoRowView.swift in Sources */,
-				2A00000000000000000007 /* CompletedSectionView.swift in Sources */,
 				2A00000000000000000008 /* SettingsView.swift in Sources */,
 				2A00000000000000000009 /* LoginItemManager.swift in Sources */,
 				2A00000000000000000010 /* TodoListView.swift in Sources */,
