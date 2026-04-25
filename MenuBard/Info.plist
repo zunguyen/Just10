@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.zu.menubard</string>
+	<string>com.zu.just10</string>
 	<key>CFBundleName</key>
-	<string>MenuBard</string>
+	<string>Just10</string>
 	<key>CFBundleDisplayName</key>
-	<string>MenuBard</string>
+	<string>Just10</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
