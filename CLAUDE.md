@@ -35,17 +35,11 @@ macOS-only menu bar app (no dock icon — `LSUIElement=YES`). SwiftUI lifecycle 
 - `TodoRowView` — checkbox, title `Text` with `.onTapGesture` to enter edit mode (no pencil button), inline multiline `TextField(axis: .vertical, lineLimit: 1...6)`, hover-only ✕. Coordinated edit via `editingItemId: Binding<UUID?>` (only one row edits at a time; focus loss saves; Esc cancels). Conditionally focusable via `RowFocusModifier` — completed rows pass `nil` and stay non-focusable.
 - `TodoDropDelegate` — DropDelegate struct that calls `store.move(from:to:)` live as items are dragged.
 
-### Per-row keyboard nav (Requirements §7.3)
+### SwiftUI pitfalls (learned in build)
 
-Wired in `TodoRowView` via `.onKeyPress`:
-
-- `Space` → toggle complete
-- `Enter` → enter edit mode (when row focused, not editing)
-- `⌘⌫` → delete
-- `⌥↑` / `⌥↓` → reorder (calls `store.moveActive`)
-- Arrow up/down without `⌥` is ignored so SwiftUI's default focus traversal handles `Tab`/arrow movement.
-
-Note: getting the `KeyPress` value (for modifier inspection) requires the `onKeyPress(keys:_:)` form — the single-`KeyEquivalent` overload's closure takes no arguments.
+- **`@ViewBuilder` on multi-statement computed properties** — if a `some View` computed property has a `let` declaration before the view expression (making it multi-statement), Swift infers no return type and raises "opaque return type has no return statements." Fix: add `@ViewBuilder` to the property. Affects `activeList` in `TodoListView`.
+- **`Color.clear` placeholder in VStack** — `Color.clear` with no frame constraint is flexible and expands to fill available space inside a `VStack` outside a `ScrollView`. When used as a hidden placeholder in `trailingControls`, this caused completed rows (rendered in a plain `VStack` in `CompletedSectionView`) to have extra vertical spacing vs active rows (inside `ScrollView`). Fix: always add `.frame(height: 0)` when using `Color.clear` as a zero-height placeholder.
+- **Never `git mv` project.pbxproj** — accidentally moving `MenuBard.xcodeproj/project.pbxproj` makes the project unopenable. If it happens, restore it immediately with `mv` before any commit.
 
 ### NSPopover constraints (do not break)
 

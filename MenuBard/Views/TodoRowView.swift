@@ -30,7 +30,7 @@ struct TodoRowView: View {
             trailingControls
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onHover { hovered in
             guard !isReordering else {

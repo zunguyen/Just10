@@ -5,8 +5,7 @@ struct TodoListView: View {
     let onSettings: () -> Void
 
     @State private var newTodoText = ""
-    @State private var draggedItem: TodoItem?
-    @State private var dropIndicator: TodoDropIndicator?
+    @StateObject private var dragSession = DragSession()
     @State private var editingItemId: UUID?
     @State private var showCapWarning = false
     @FocusState private var isTextFieldFocused: Bool
@@ -36,16 +35,15 @@ struct TodoListView: View {
                 showCapWarning = false
             }
         }
-        .onChange(of: draggedItem?.id) { _, draggedId in
+        .onChange(of: dragSession.draggedItemId) { _, draggedId in
             if draggedId == nil {
-                dropIndicator = nil
                 NotificationCenter.default.post(name: .todoDragDidEnd, object: nil)
             }
         }
         .onDisappear {
-            if draggedItem != nil {
-                draggedItem = nil
-                dropIndicator = nil
+            if dragSession.isActive {
+                dragSession.draggedItemId = nil
+                dragSession.dropIndicator = nil
                 NotificationCenter.default.post(name: .todoDragDidEnd, object: nil)
             }
         }
@@ -90,6 +88,8 @@ struct TodoListView: View {
 
     @ViewBuilder private var activeList: some View {
         let activeTodos = store.activeTodos
+        let draggedItemId = dragSession.draggedItemId
+        let dropIndicator = dragSession.dropIndicator
 
         Group {
             if activeTodos.isEmpty {
@@ -107,36 +107,20 @@ struct TodoListView: View {
 
                     ScrollView {
                         LazyVStack(spacing: 0) {
-                            ForEach(activeTodos) { item in
-                                TodoRowView(
+                            ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
+                                DragRowContainer(
                                     item: item,
-                                    onToggle: { store.toggle(item) },
-                                    onDelete: { store.delete(item) },
-                                    onEdit: { newTitle in store.update(item, title: newTitle) },
+                                    isFirst: index == 0,
+                                    isDragged: draggedItemId == item.id,
+                                    isReordering: draggedItemId != nil,
+                                    isDropTarget: dropIndicator?.itemID == item.id,
+                                    dropEdge: dropIndicator?.itemID == item.id ? dropIndicator?.edge : nil,
+                                    dragSession: dragSession,
                                     editingItemId: $editingItemId,
-                                    isReordering: draggedItem != nil
+                                    store: store,
+                                    onStartDrag: clearEditingAndSelection
                                 )
-                                .opacity(draggedItem?.id == item.id ? 0.4 : 1.0)
-                                .overlay(alignment: dropIndicatorAlignment(for: item.id)) {
-                                    if let indicator = dropIndicator, indicator.itemID == item.id {
-                                        dropIndicatorLine
-                                    }
-                                }
-                                .onDrag {
-                                    clearEditingAndSelection()
-                                    draggedItem = item
-                                    NotificationCenter.default.post(name: .todoDragDidStart, object: nil)
-                                    return NSItemProvider(object: item.id.uuidString as NSString)
-                                }
-                                .onDrop(
-                                    of: [.plainText],
-                                    delegate: TodoDropDelegate(
-                                        targetItem: item,
-                                        store: store,
-                                        draggedItem: $draggedItem,
-                                        dropIndicator: $dropIndicator
-                                    )
-                                )
+                                .equatable()
                             }
                         }
                     }
@@ -181,14 +165,6 @@ struct TodoListView: View {
         .padding(.vertical, 8)
     }
 
-    private var dropIndicatorLine: some View {
-        Rectangle()
-            .fill(Color.accentColor)
-            .frame(height: 2)
-            .padding(.leading, 36)
-            .padding(.trailing, 12)
-    }
-
     private func addTodo() {
         let trimmed = newTodoText.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
@@ -196,7 +172,6 @@ struct TodoListView: View {
             newTodoText = ""
             showCapWarning = false
         } else {
-            // Cap reached — preserve typed text, surface the inline message.
             withAnimation(.easeInOut(duration: 0.15)) { showCapWarning = true }
         }
     }
@@ -205,8 +180,64 @@ struct TodoListView: View {
         editingItemId = nil
     }
 
-    private func dropIndicatorAlignment(for itemID: UUID) -> Alignment {
-        guard let indicator = dropIndicator, indicator.itemID == itemID else { return .top }
-        return indicator.edge == .before ? .top : .bottom
+}
+
+private struct DragRowContainer: View, Equatable {
+    let item: TodoItem
+    let isFirst: Bool
+    let isDragged: Bool
+    let isReordering: Bool
+    let isDropTarget: Bool
+    let dropEdge: TodoDropEdge?
+    let dragSession: DragSession
+    @Binding var editingItemId: UUID?
+    let store: TodoStore
+    let onStartDrag: () -> Void
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.item == rhs.item &&
+        lhs.isFirst == rhs.isFirst &&
+        lhs.isDragged == rhs.isDragged &&
+        lhs.isReordering == rhs.isReordering &&
+        lhs.isDropTarget == rhs.isDropTarget &&
+        lhs.dropEdge == rhs.dropEdge
+    }
+
+    var body: some View {
+        TodoRowView(
+            item: item,
+            onToggle: { store.toggle(item) },
+            onDelete: { store.delete(item) },
+            onEdit: { newTitle in store.update(item, title: newTitle) },
+            editingItemId: $editingItemId,
+            isReordering: isReordering
+        )
+        .padding(.top, isFirst ? 6 : 0)
+        .opacity(isDragged ? 0.4 : 1.0)
+        .overlay(alignment: dropEdge == .before ? .top : .bottom) {
+            if isDropTarget { dropIndicatorLine }
+        }
+        .onDrag {
+            onStartDrag()
+            dragSession.draggedItemId = item.id
+            NotificationCenter.default.post(name: .todoDragDidStart, object: nil)
+            return NSItemProvider(object: item.id.uuidString as NSString)
+        }
+        .onDrop(
+            of: [.plainText],
+            delegate: TodoDropDelegate(
+                targetItem: item,
+                store: store,
+                dragSession: dragSession
+            )
+        )
+    }
+
+    private var dropIndicatorLine: some View {
+        Rectangle()
+            .fill(Color.accentColor)
+            .frame(height: 2)
+            .padding(.leading, 36)
+            .padding(.trailing, 12)
     }
 }

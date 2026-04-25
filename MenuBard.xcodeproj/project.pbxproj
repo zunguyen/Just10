@@ -22,6 +22,7 @@
 		2A00000000000000000013 /* GlobalHotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000013 /* GlobalHotkey.swift */; };
 		2A00000000000000000014 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000014 /* HotkeyRecorderView.swift */; };
 		2A00000000000000000015 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000015 /* Typography.swift */; };
+		2A00000000000000000016 /* DragSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000016 /* DragSession.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		1A00000000000000000013 /* GlobalHotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkey.swift; sourceTree = "<group>"; };
 		1A00000000000000000014 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		1A00000000000000000015 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		1A00000000000000000016 /* DragSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragSession.swift; sourceTree = "<group>"; };
 		9A00000000000000000001 /* MenuBard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MenuBard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -103,6 +105,7 @@
 				1A00000000000000000008 /* SettingsView.swift */,
 				1A00000000000000000010 /* TodoListView.swift */,
 				1A00000000000000000011 /* TodoDropDelegate.swift */,
+				1A00000000000000000016 /* DragSession.swift */,
 				1A00000000000000000014 /* HotkeyRecorderView.swift */,
 			);
 			path = Views;
@@ -209,6 +212,7 @@
 				2A00000000000000000013 /* GlobalHotkey.swift in Sources */,
 				2A00000000000000000014 /* HotkeyRecorderView.swift in Sources */,
 				2A00000000000000000015 /* Typography.swift in Sources */,
+				2A00000000000000000016 /* DragSession.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

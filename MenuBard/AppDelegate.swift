@@ -62,11 +62,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.behavior = .transient
         popover.animates = true
         popover.delegate = self
-        popover.contentViewController = NSHostingController(
+        let hostingController = NSHostingController(
             rootView: ContentView()
                 .environment(store)
                 .environment(settings)
         )
+        // Prevent SwiftUI layout changes from resizing/repositioning the popover.
+        hostingController.sizingOptions = []
+        popover.contentViewController = hostingController
     }
 
     private func setupObservers() {
@@ -114,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard !isReorderingFromPopover else { return }
 
         if let title = topTodoTitle {
-            let truncated = title.count > 28 ? String(title.prefix(28)) + "…" : title
+            let truncated = title.count > 20 ? String(title.prefix(20)) + "…" : title
             button.title = " \(truncated)"
             button.toolTip = title
         } else {

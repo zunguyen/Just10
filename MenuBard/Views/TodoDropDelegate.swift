@@ -18,24 +18,23 @@ struct TodoDropDelegate: DropDelegate {
 
     let targetItem: TodoItem
     let store: TodoStore
-    @Binding var draggedItem: TodoItem?
-    @Binding var dropIndicator: TodoDropIndicator?
+    let dragSession: DragSession
 
     func dropEntered(info: DropInfo) {
         updateDropState(info: info)
     }
 
     func dropExited(info: DropInfo) {
-        if dropIndicator?.itemID == targetItem.id {
-            dropIndicator = nil
+        if dragSession.dropIndicator?.itemID == targetItem.id {
+            dragSession.dropIndicator = nil
         }
     }
 
     func performDrop(info: DropInfo) -> Bool {
         updateDropState(info: info)
         moveDraggedItemIfNeeded()
-        draggedItem = nil
-        dropIndicator = nil
+        dragSession.draggedItemId = nil
+        dragSession.dropIndicator = nil
         return true
     }
 
@@ -47,21 +46,21 @@ struct TodoDropDelegate: DropDelegate {
     func validateDrop(info: DropInfo) -> Bool { true }
 
     private func updateDropState(info: DropInfo) {
-        guard let dragged = draggedItem, dragged.id != targetItem.id else { return }
+        guard let draggedId = dragSession.draggedItemId, draggedId != targetItem.id else { return }
         let edge: TodoDropEdge = info.location.y > Layout.lowerHalfThreshold ? .after : .before
         let indicator = TodoDropIndicator(itemID: targetItem.id, edge: edge)
-        if dropIndicator != indicator {
-            dropIndicator = indicator
+        if dragSession.dropIndicator != indicator {
+            dragSession.dropIndicator = indicator
         }
     }
 
     private func moveDraggedItemIfNeeded() {
         guard
-            let dragged = draggedItem,
-            let indicator = dropIndicator,
+            let draggedId = dragSession.draggedItemId,
+            let indicator = dragSession.dropIndicator,
             indicator.itemID == targetItem.id,
-            dragged.id != targetItem.id,
-            let fromIdx = store.activeTodos.firstIndex(where: { $0.id == dragged.id }),
+            draggedId != targetItem.id,
+            let fromIdx = store.activeTodos.firstIndex(where: { $0.id == draggedId }),
             let targetIdx = store.activeTodos.firstIndex(where: { $0.id == targetItem.id })
         else { return }
 
