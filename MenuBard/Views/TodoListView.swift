@@ -10,7 +10,6 @@ struct TodoListView: View {
     @State private var editingItemId: UUID?
     @State private var showCapWarning = false
     @FocusState private var isTextFieldFocused: Bool
-    @FocusState private var focusedItemId: UUID?
 
     private var activeCount: Int { store.activeTodos.count }
     private var atCap: Bool { store.isAtActiveCap }
@@ -39,7 +38,6 @@ struct TodoListView: View {
         }
         .onChange(of: draggedItem?.id) { _, draggedId in
             if draggedId == nil {
-                focusedItemId = nil
                 dropIndicator = nil
                 NotificationCenter.default.post(name: .todoDragDidEnd, object: nil)
             }
@@ -109,16 +107,13 @@ struct TodoListView: View {
 
                     ScrollView {
                         LazyVStack(spacing: 0) {
-                            ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
+                            ForEach(activeTodos) { item in
                                 TodoRowView(
                                     item: item,
                                     onToggle: { store.toggle(item) },
                                     onDelete: { store.delete(item) },
                                     onEdit: { newTitle in store.update(item, title: newTitle) },
-                                    onMoveUp: { store.moveActive(item, by: -1) },
-                                    onMoveDown: { store.moveActive(item, by: 1) },
                                     editingItemId: $editingItemId,
-                                    focusedItemId: $focusedItemId,
                                     isReordering: draggedItem != nil
                                 )
                                 .opacity(draggedItem?.id == item.id ? 0.4 : 1.0)
@@ -142,9 +137,6 @@ struct TodoListView: View {
                                         dropIndicator: $dropIndicator
                                     )
                                 )
-                                if index < activeTodos.count - 1 {
-                                    Divider().padding(.leading, 36).opacity(0.3)
-                                }
                             }
                         }
                     }
@@ -211,7 +203,6 @@ struct TodoListView: View {
 
     private func clearEditingAndSelection() {
         editingItemId = nil
-        focusedItemId = nil
     }
 
     private func dropIndicatorAlignment(for itemID: UUID) -> Alignment {

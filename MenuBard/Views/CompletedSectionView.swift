@@ -13,15 +13,12 @@ struct CompletedSectionView: View {
             header
             if isExpanded {
                 Divider().opacity(0.4)
-                ForEach(Array(completedTodos.enumerated()), id: \.element.id) { index, item in
+                ForEach(completedTodos) { item in
                     TodoRowView(
                         item: item,
                         onToggle: { store.toggle(item) },
                         onDelete: { store.delete(item) }
                     )
-                    if index < completedTodos.count - 1 {
-                        Divider().padding(.leading, 36).opacity(0.3)
-                    }
                 }
             }
         }

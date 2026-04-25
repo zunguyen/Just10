@@ -26,11 +26,13 @@ struct SettingsView: View {
     private var header: some View {
         HStack {
             Button(action: onDismiss) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
+    Image(systemName: "chevron.left")
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(.secondary)
+        .padding(8) // ← expands the hit area by 8pt on all sides
+        .contentShape(Rectangle()) // ← tells SwiftUI the whole padded area is tappable
+}
+.buttonStyle(.plain)
             .keyboardShortcut(.escape, modifiers: [])
             .accessibilityLabel("Back to todos")
 
@@ -44,17 +46,21 @@ struct SettingsView: View {
         .padding(.vertical, 12)
     }
 
-    private var launchAtLoginRow: some View {
-        Toggle(isOn: $launchAtLogin) {
-            Text("Launch at Login").font(Typography.body)
-        }
-        .toggleStyle(.switch)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
-        .onChange(of: launchAtLogin) { _, newValue in
-            LoginItemManager.shared.setEnabled(newValue)
-        }
+  private var launchAtLoginRow: some View {
+    HStack {
+        Text("Launch at Login").font(Typography.body)
+        Spacer()
+        Toggle("", isOn: $launchAtLogin)
+            .toggleStyle(.switch)
+            .labelsHidden()
+            .scaleEffect(0.7, anchor: .trailing)
     }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 8)
+    .onChange(of: launchAtLogin) { _, newValue in
+        LoginItemManager.shared.setEnabled(newValue)
+    }
+}
 
     private var themeRow: some View {
         let bound = Bindable(settings)
