@@ -4,7 +4,7 @@
 
 **Document status:** Locked for build
 
-**Last updated:** April 25, 2026
+**Last updated:** April 26, 2026 (post-simplification pass: collapsible Completed folder removed, global hotkey removed, popover resized to 320×380, reactivation moves to bottom of active list)
 
 ---
 
@@ -22,7 +22,7 @@ The app follows three principles that drive every decision below.
 
 > **The menu bar reflects deliberate user choice.** Position 1 in the list is what shows in the menu bar. The user controls position 1 by dragging. The system never reorders for them.
 
-> **Constraints prevent debt.** A hard 10 todo cap means users finish what they start instead of accumulating an overwhelming backlog. The same cap applies to completed todos to keep the Completed folder useful, not archival.
+> **Constraints prevent debt.** A hard 10 todo cap means users finish what they start instead of accumulating an overwhelming backlog. The same cap applies to completed todos to keep the completed list useful, not archival.
 
 ---
 
@@ -52,22 +52,22 @@ The menu bar shows the **`checklist` SF Symbol + the top todo's title**. The "to
 
 | State | Menu bar shows |
 | --- | --- |
-| Has 1 or more todos | Icon + top todo title, truncated to 28 characters |
+| Has 1 or more todos | Icon + top todo title, truncated to 20 characters |
 | No active todos | Icon + "All done" |
 
-**Long text behavior:** Truncate with ellipsis at 28 characters. Marquee scrolling is rejected. The full title is always visible inside the popover and on hover via the system tooltip. Width is not user-configurable in this build.
+**Long text behavior:** Truncate with ellipsis at 20 characters. Marquee scrolling is rejected. The full title is always visible inside the popover and on hover via the system tooltip. Width is not user-configurable in this build. (The 20-char limit is a tightening from the original 28; longer titles pushed neighboring menu bar icons and destabilized the popover anchor.)
 
 **Promotion behavior:** When the top todo changes, the menu bar text updates immediately (no cross-fade animation in this build).
 
 ### 3.2 Popover Layout
 
-The popover anchors beneath the menu bar icon. It is **280pt wide and 400pt tall (fixed)**. It dismisses on outside click, on `Esc`, or on re-clicking the menu bar icon.
+The popover anchors beneath the menu bar icon. It is **320pt wide and 380pt tall (fixed)**. It dismisses on outside click, on `Esc`, or on re-clicking the menu bar icon.
 
 The popover is divided into three zones, top to bottom:
 
 1. **Input zone:** A single text field with `+` icon and "Add a todo…" placeholder. `Enter` commits and keeps the field focused for rapid entry. `Esc` blurs the field.
-2. **List zone:** Scrollable column of active todos. When empty, shows the message "Create your new todo" centered in the available space.
-3. **Footer zone:** Two thin rows. The first contains the Completed folder header with count and Clear button. The second shows the `⌘Q Quit` hint on the left and the settings gear icon on the right.
+2. **List zone:** Scrollable column containing active todos followed inline by completed todos (no section header between them). When the list is fully empty, shows the message "Create your new todo" centered in the available space.
+3. **Footer zone:** When any completed todos exist, a "Clear completed" button appears just below the scroll area (inline two-step `Clear → Confirm/Cancel`). Below that, a single thin row shows the `⌘Q Quit` hint on the left and the settings gear icon on the right.
 
 ### 3.3 Todo Row Behaviors
 
@@ -75,11 +75,11 @@ Every active todo row supports five interactions.
 
 | Interaction | Trigger | Result |
 | --- | --- | --- |
-| Complete | Click empty checkbox | Checkmark fills, row moves into Completed folder |
+| Complete | Click empty checkbox | Checkmark fills, row moves to the bottom of the completed list (newly completed always appears last) |
 | Edit | Click on todo text | Inline auto-growing text area opens |
 | Delete | Hover row → ✕ icon appears, click it | Immediate delete (no undo toast in this build) |
-| Reorder | Drag the handle on the right edge (visible on hover) | Row reorders, top row updates menu bar text |
-| Reactivate (from Completed folder) | Click filled checkbox in Completed folder | Todo returns to active list at its prior position (no forced repositioning) |
+| Reorder | Drag the row anywhere (no visible handle; entire active row is the drag affordance) | Row reorders, top row updates menu bar text |
+| Reactivate (from completed list) | Click filled checkbox on a completed row | Todo returns to the **bottom of the active list** (no longer "keeps prior order") |
 
 ### 3.4 Inline Editing
 
@@ -103,17 +103,21 @@ For todos that wrap to 2 or more lines, the checkbox is **top-aligned with the f
 
 SwiftUI implementation uses `HStack(alignment: .top)` with matching top padding on the checkbox to align it with the first text baseline.
 
-### 3.6 Completed Folder
+### 3.6 Completed List
 
-A collapsible folder at the bottom of the list, **collapsed by default**. The header shows "Completed" with a count badge and a Clear button on the right.
+Completed todos render **inline at the bottom of the same scroll list as active todos**, with no "Completed" header, no count badge, and no expand/collapse control. The simplification was deliberate: the collapsed-by-default folder hid the result of the user's action (the just-completed todo) and added a click to reach it.
 
-**Completed folder cap:** The folder holds a maximum of **10 completed todos**. When an 11th todo is completed, the oldest completed todo is automatically removed (FIFO). This prevents the folder from becoming an archive and keeps the app focused on recent activity.
+Completed rows are visually distinguished by the filled checkmark icon (`checkmark.circle.fill` in secondary color) and a strikethrough on the title text.
+
+**Sort order:** Completed todos are sorted by `completedAt` **ascending** (oldest at top of completed group, newest at the very bottom of the list). The most recently completed todo always appears last.
+
+**Completed list cap:** Holds a maximum of **10 completed todos**. When an 11th todo is completed, the oldest completed todo is automatically removed (FIFO). This prevents the list from becoming an archive and keeps the app focused on recent activity.
 
 > The 10 cap on completed todos mirrors the 10 cap on active todos. Together they enforce the product's core principle: this is a tool for what you are doing now, not a record of what you have ever done.
 
-**Clear button behavior:** Tapping Clear in the Completed header swaps it inline for `Confirm` (red) + `Cancel`. `Confirm` deletes immediately. There is no undo toast in this build — a system-level confirmation dialog (`.confirmationDialog`/`.alert`) is intentionally avoided because it triggers `NSViewBridgeErrorCanceled` console noise inside `NSPopover`.
+**Clear completed button:** When at least one completed todo exists, a "Clear completed" button appears just below the scroll list (above the footer). Tapping it swaps inline for `Confirm` (red) + `Cancel`. `Confirm` deletes all completed todos immediately. There is no undo toast in this build — a system-level confirmation dialog (`.confirmationDialog`/`.alert`) is intentionally avoided because it triggers `NSViewBridgeErrorCanceled` console noise inside `NSPopover`.
 
-**Reactivation behavior:** When the user clicks the filled checkbox of a completed todo, the todo returns to the active list keeping its prior `order` value. No forced repositioning — the user can drag to reprioritize if needed.
+**Reactivation behavior:** When the user clicks the filled checkbox of a completed todo, the todo returns to the active list at the **bottom** (its `order` is reassigned to `max(activeOrders) + 1`). The previous "keeps prior order" behavior was changed because reactivated todos slotting into the middle of the active list felt like a surprise; landing at the bottom matches the natural reading order of "this is the next thing I'm working on again."
 
 ### 3.7 Active Todo Cap
 
@@ -129,7 +133,7 @@ The cap exists to prevent the user from accumulating debt. The product's purpose
 
 The user's typed text is preserved in the input field so they don't lose what they wrote. The message dismisses automatically when the count drops below 10 or when the user clicks elsewhere.
 
-**Drag-and-drop scope (locked decision):** Drag-and-drop reordering only works **within the active list**. Users cannot drag from the Completed folder back into active todos. Reactivation is done via the checkbox.
+**Drag-and-drop scope (locked decision):** Drag-and-drop reordering only works **within the active list**. Users cannot drag from the completed list back into active todos. Reactivation is done via the checkbox.
 
 ---
 
@@ -156,11 +160,11 @@ There is no first-run onboarding. The interface is simple enough that a single e
 
 After the user dismisses this dialog (with or without checking the box), subsequent quits are instant.
 
-### 5.2 Open at Login
+### 5.2 Launch at Login
 
 Settings includes a single labeled toggle.
 
-> **Open at Login**
+> **Launch at Login**
 > Launch automatically when you sign in to your Mac.
 
 **Default:** Off. The user opts in.
@@ -169,27 +173,20 @@ Settings includes a single labeled toggle.
 
 ### 5.3 Global Hotkey
 
-A user-configurable global keyboard shortcut opens the popover with the input field auto-focused, regardless of which app is currently active.
-
-**Default:** `⌃⌥Space`
-
-**Implementation:** Sindre Sorhus's `KeyboardShortcuts` Swift package, which handles user remapping and conflict detection.
+**Removed from this build.** The product opens via the menu bar icon only. A `GlobalHotkey` helper class still exists in `Helpers/` from earlier exploration but is not wired up; the hotkey setting and recorder UI were removed when the Settings panel was simplified. Click the menu bar icon (or use the standard `Esc` to dismiss) — there is no system-wide keyboard activation.
 
 ---
 
 ## 6. Settings Panel
 
-Accessed via the gear icon in the popover footer. Three settings total, reflecting the minimalist spirit of the app.
+Accessed via the gear icon in the popover footer. Two settings total, reflecting the minimalist spirit of the app.
 
 | Setting | Type | Default |
 | --- | --- | --- |
-| Open at Login | Toggle | Off |
-| Global hotkey | Recorder | `⌃⌥Space` |
+| Launch at Login | Toggle | Off |
 | Theme | Segmented: System / Light / Dark | System |
 
-Plus a destructive **Clear all todos** action (with inline `Confirm` / `Cancel`).
-
-Menu bar text width is fixed (30-character truncation, see §3.1) and "Show menu bar text" is not a toggle in this build — these are deliberately removed to keep the surface minimal.
+Removed in the simplification pass: global hotkey recorder, "Clear all todos" destructive action, "Show menu bar text" toggle. Menu bar text width remains fixed (20-char truncation, see §3.1).
 
 Settings persist via `UserDefaults`. Changes take effect immediately without requiring an app restart.
 
@@ -197,7 +194,7 @@ Settings persist via `UserDefaults`. Changes take effect immediately without req
 
 ## 7. Accessibility
 
-Accessibility is a first-class requirement, not an afterthought. The app must pass an Apple accessibility audit before shipping.
+Accessibility is a first-class requirement, not an afterthought. The app must pass an Apple accessibility audit before shipping. **Caveat for this build:** keyboard-only operation (§7.3) is intentionally minimal and will not pass a full audit on its own; per-row keyboard navigation is deferred to a later build. Typography (§7.1), VoiceOver labels (§7.2), and system-preference respect (§7.4–7.5) are in scope and must pass.
 
 ### 7.1 Typography
 
@@ -211,26 +208,27 @@ Every interactive element has a descriptive label. Examples of expected announce
 
 1. Menu bar item: "Todo. Top todo: Portfolio with playground. Click to open list."
 2. Active todo row: "Todo: Portfolio with playground. Not completed. Actions available."
-3. Completing a todo: "Todo completed. Moved to Completed folder."
+3. Completing a todo: "Todo completed. Moved to bottom of completed list."
 4. Reactivating a todo: "Todo reactivated. Moved to bottom of active list."
 
-VoiceOver rotor groups todos into "Active" and "Completed" sections.
+VoiceOver rotor groups todos into "Active" and "Completed" sections (logical grouping by `isCompleted`, even though the visual list is one continuous scroll).
 
-### 7.3 Keyboard-Only Operation
+### 7.3 Keyboard Support
 
-Every action reachable by mouse must also have a keyboard path.
+Keyboard support in this build is intentionally minimal — limited to the input field, dialog dismissal, and quit. Per-row keyboard navigation (Tab to a row, `Space` to toggle, `Enter` to edit, `⌘⌫` to delete, `↑`/`↓` to move focus, `⌥↑`/`⌥↓` to reorder) is **not implemented**. Rows are mouse-driven only.
 
-**Tab order:** Input field → first active todo → next active todo → Completed folder header → Clear button → settings gear.
+**What works today:**
 
-**Per-row keyboard shortcuts when a row is focused:**
+| Shortcut | Where | Action |
+| --- | --- | --- |
+| `Enter` | Add-todo input field | Commits the new todo, keeps the field focused |
+| `Esc` | Inside a row's edit field | Cancels the edit, reverts the title |
+| `Esc` | Settings panel | Returns to the todo list |
+| `⌘Q` | Anywhere in the popover | Quits the app (with first-run confirmation per §5.1) |
 
-1. `Space` toggles complete state
-2. `Enter` enters edit mode
-3. `⌘⌫` deletes the todo with undo toast
-4. `↑` and `↓` move focus between rows
-5. `⌥↑` and `⌥↓` reorder the focused row up or down
+**Out of scope for this build:** focusable rows, focus rings on rows, `Space`/`Enter`/`⌘⌫` per-row shortcuts, arrow-key row navigation, `⌥↑`/`⌥↓` reorder, undo toast for delete. `TodoStore.moveActive(_:by:)` exists in the model layer as scaffolding for future keyboard reordering, but no view currently calls it.
 
-Focus rings use the system accent color at 2pt thickness, fully visible against all backgrounds.
+**If keyboard navigation is added later:** it should go through `@FocusState focusedItemId: UUID?` on `TodoListView` (matching the existing `editingItemId` pattern), and rows should opt in via a focus modifier — completed rows pass `nil` and stay non-focusable.
 
 ### 7.4 System Preferences Respected
 
@@ -255,10 +253,10 @@ SwiftUI's `@Environment(\.colorScheme)` drives all colors. No hardcoded hex valu
 | UI Framework | SwiftUI lifecycle + AppKit `NSStatusItem`/`NSPopover` via `NSApplicationDelegateAdaptor` | `MenuBarExtra` is too restrictive for a custom popover anchored to a status item; AppKit gives precise control. |
 | State | Swift `@Observable` (Observation framework) | Zero-dependency, native, sufficient for a 10+10 dataset. TCA was evaluated and rejected as overkill. |
 | Storage | `UserDefaults` + `JSONEncoder/JSONDecoder` | Tiny dataset (≤20 items). Core Data + SQLite was evaluated and rejected — the migration tooling and ceremony are not justified at this scale. |
-| Hotkeys | Carbon `RegisterEventHotKey` wrapped in a small `GlobalHotkey` class | Zero external dependencies. `KeyboardShortcuts` SPM package was evaluated and rejected to keep the project dependency-free. |
+| Hotkeys | None in current build. A `GlobalHotkey` Carbon helper exists in `Helpers/` from earlier exploration but is not wired up. | Cut to simplify the surface area; revisit if user feedback demands it. |
 | Login Items | `SMAppService.mainApp` | Modern macOS 13+ API, requires only a valid bundle ID. |
 
-**Storage:** `UserDefaults` key `MenuBard.todos` (JSON-encoded `[TodoItem]`). No soft-delete (no undo toast in this build, see §3.6).
+**Storage:** `UserDefaults` key `menubard.todos` (JSON-encoded `[TodoItem]`). No soft-delete (no undo toast in this build, see §3.6).
 
 **Schema:** `TodoItem { id: UUID, title: String, isCompleted: Bool, order: Int, createdAt: Date, completedAt: Date? }`.
 
@@ -279,25 +277,26 @@ For clarity, here are all the explicit decisions made during this spec, in one p
 | # | Decision | Choice |
 | --- | --- | --- |
 | 1 | Maximum active todos | 10 hard cap |
-| 2 | Maximum completed todos | 10 (FIFO eviction) |
-| 3 | Reactivated todo placement | Bottom of active list |
+| 2 | Maximum completed todos | 10 (FIFO eviction — oldest completed evicted first) |
+| 3 | Newly completed placement | Bottom of completed list (sorted by `completedAt` ascending) |
 | 4 | Drag-and-drop scope | Within active list only |
 | 5 | Long menu bar text behavior | Truncate with ellipsis, no scrolling |
-| 6 | Single delete confirmation | None, immediate with undo toast |
+| 6 | Single delete confirmation | None, immediate, no undo |
 | 7 | Clear all confirmation | Inline two-step `Clear → Confirm/Cancel`, no undo toast |
 | 8 | Quit confirmation | First time only, dismissable |
-| 16 | Reactivation placement | Keeps prior `order` (no forced repositioning) |
-| 17 | Single delete confirmation | None, immediate, no undo |
-| 18 | Tech stack | `@Observable` + `UserDefaults`+JSON + Carbon hotkey (no SPM, no TCA, no Core Data) |
-| 19 | Menu bar display | `checklist` SF Symbol + title (28-char truncation; no width slider, no show/hide toggle) |
-| 20 | Popover size | Fixed 280×400pt |
-| 9 | Open at Login default | Off |
+| 9 | Launch at Login default | Off |
 | 10 | First-run onboarding | None |
 | 11 | Data export and import | Out of scope |
 | 12 | Sync across devices | Out of scope |
 | 13 | Empty state message | "Create your new todo" |
 | 14 | Cap-reached message | "You've reached 10 todos. Complete or delete one to add more." |
 | 15 | Counter visibility threshold | 8 of 10 |
+| 16 | Reactivation placement | Bottom of active list (`order` reassigned to `max+1`). **Changed from earlier "keeps prior order".** |
+| 17 | Completed list presentation | Inline at bottom of scroll list (no collapsible "Completed" folder, no header, no count badge). **Changed from earlier collapsible folder.** |
+| 18 | Tech stack | `@Observable` + `UserDefaults`+JSON (no SPM, no TCA, no Core Data, no global hotkey) |
+| 19 | Menu bar display | `checklist` SF Symbol + title (20-char truncation; no width slider, no show/hide toggle) |
+| 20 | Popover size | Fixed 320×380pt. **Changed from earlier 280×400.** |
+| 21 | Global hotkey | Removed from product (Settings panel simplified to Launch at Login + Theme only) |
 
 ---
 

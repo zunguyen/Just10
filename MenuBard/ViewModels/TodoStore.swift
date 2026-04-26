@@ -47,9 +47,16 @@ final class TodoStore {
         mutateItems { items in
             guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
             items[idx].isCompleted.toggle()
-            items[idx].completedAt = items[idx].isCompleted ? Date() : nil
             if items[idx].isCompleted {
+                items[idx].completedAt = Date()
                 enforceCompletedCap(in: &items)
+            } else {
+                items[idx].completedAt = nil
+                let maxActiveOrder = items
+                    .filter { !$0.isCompleted && $0.id != item.id }
+                    .map(\.order)
+                    .max() ?? -1
+                items[idx].order = maxActiveOrder + 1
             }
         }
     }
@@ -116,7 +123,7 @@ final class TodoStore {
         activeTodos = active
         completedTodos = items
             .filter { $0.isCompleted }
-            .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
+            .sorted { ($0.completedAt ?? .distantPast) < ($1.completedAt ?? .distantPast) }
         isAtActiveCap = active.count >= Self.activeCap
     }
 

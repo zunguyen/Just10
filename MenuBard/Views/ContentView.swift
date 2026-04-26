@@ -11,7 +11,7 @@ struct ContentView: View {
                 TodoListView(onSettings: { showSettings = true })
             }
         }
-        .frame(width: 320, height: 460)
+        .frame(width: 320, height: 380)
         .background(Color(nsColor: .windowBackgroundColor))
     }
 }

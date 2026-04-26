@@ -39,16 +39,23 @@ struct TodoListView: View {
         .onChange(of: hasCompleted) { _, nowHasCompleted in
             if !nowHasCompleted { isConfirmingClearCompleted = false }
         }
-        .onChange(of: dragSession.draggedItemId) { _, draggedId in
-            if draggedId == nil {
-                NotificationCenter.default.post(name: .todoDragDidEnd, object: nil)
+        // Defensive: clear editingItemId if the edited item leaves activeTodos
+        // (toggled to completed, deleted, evicted). Without this, the next time
+        // that item returns to active (e.g., un-checked) the new TodoRowView
+        // sees editingItemId == item.id and renders a TextField with the fresh
+        // empty @State editText — visually a checkbox with no text.
+        // Reproduces only when SwiftUI's @FocusState onChange doesn't fire
+        // during view destruction (intermittent).
+        .onChange(of: store.activeTodos) { _, newActive in
+            guard let editingId = editingItemId else { return }
+            if !newActive.contains(where: { $0.id == editingId }) {
+                editingItemId = nil
             }
         }
         .onDisappear {
             if dragSession.isActive {
                 dragSession.draggedItemId = nil
                 dragSession.dropIndicator = nil
-                NotificationCenter.default.post(name: .todoDragDidEnd, object: nil)
             }
         }
     }
@@ -111,7 +118,7 @@ struct TodoListView: View {
                         .onTapGesture { clearEditingAndSelection() }
 
                     ScrollView {
-                        LazyVStack(spacing: 0) {
+                        VStack(spacing: 0) {
                             ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
                                 DragRowContainer(
                                     item: item,
@@ -126,6 +133,7 @@ struct TodoListView: View {
                                     onStartDrag: clearEditingAndSelection
                                 )
                                 .equatable()
+                                .id("active-\(item.id)")
                             }
                             ForEach(completedTodos) { item in
                                 TodoRowView(
@@ -133,6 +141,7 @@ struct TodoListView: View {
                                     onToggle: { store.toggle(item) },
                                     onDelete: { store.delete(item) }
                                 )
+                                .id("completed-\(item.id)")
                             }
                         }
                     }
@@ -264,7 +273,6 @@ private struct DragRowContainer: View, Equatable {
         .onDrag {
             onStartDrag()
             dragSession.draggedItemId = item.id
-            NotificationCenter.default.post(name: .todoDragDidStart, object: nil)
             return NSItemProvider(object: item.id.uuidString as NSString)
         }
         .onDrop(

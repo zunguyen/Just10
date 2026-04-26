@@ -54,4 +54,4 @@ macOS-only menu bar app (no dock icon — `LSUIElement=YES`). SwiftUI lifecycle 
 
 ### Skills
 
-Read skills in `skills/` — `swiftui-pro`, `swiftui-design-principles-main`, `swift-accessibility-skill`, and `macos-menubar-tuist-app` apply.
+Read skills in `.agents/skills/` — `swiftui-pro`, `swiftui-design-principles-main`, `swift-accessibility-skill`, `swift-architecture-skill`, `swift-testing-pro`, `swift-performance-audit`, `swift-concurrency-expert`, and `macos-menubar-tuist-app` apply.

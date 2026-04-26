@@ -1,4 +1,4 @@
-# MenuBard
+# Just10
 
 A minimalist macOS menu bar todo app. Your most important task is always visible in the menu bar — everything else is one click away.
 
@@ -34,5 +34,4 @@ No package dependencies, no SPM, no Tuist, no pre-build steps.
 
 - SwiftUI + AppKit (`NSStatusItem` / `NSPopover`)
 - `@Observable` state, `UserDefaults` + JSON persistence
-- Carbon `RegisterEventHotKey` for the global shortcut (no SPM dependencies)
 - `SMAppService` for Open at Login

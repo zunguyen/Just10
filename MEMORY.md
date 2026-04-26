@@ -10,11 +10,17 @@ Known bugs and patterns to avoid repeating.
 
 **`Color.clear` placeholder needs `.frame(height: 0)`** — `Color.clear` with no frame constraint expands to fill available vertical space in a `VStack` outside a `ScrollView`. Always use `Color.clear.frame(height: 0).accessibilityHidden(true)` as a zero-height placeholder in `trailingControls` or similar toggle-visible slots.
 
+**Same UUID across two `ForEach` instances corrupts row state** — `TodoListView` renders active items via `ForEach(activeTodos)` and completed items via `ForEach(completedTodos)` in the same `VStack`. When a todo is toggled, its UUID jumps from one ForEach to the other, and SwiftUI's identity diff reuses the wrong view: completed items rendered without checkmark/strikethrough, unchecked items rendered without title text. Two-part fix: (1) use `VStack` not `LazyVStack` (already done — lazy recycling makes it worse), (2) namespace the identity per section with `.id("active-\(item.id)")` and `.id("completed-\(item.id)")` on each row. Without the prefix, SwiftUI treats the two slots as the same view.
+
 ---
 
 ## NSPopover
 
-**Popover repositions/shifts during drag** — `NSHostingController` includes `.preferredContentSize` in `sizingOptions` by default, so any SwiftUI layout change during drag causes the popover to resize and reposition. Fix: set `hostingController.sizingOptions = []` before assigning to `popover.contentViewController`. This locks the popover at its fixed `contentSize` (320×400) forever. Already applied in `AppDelegate.setupPopover()`.
+**Popover position-shift requires TWO independent fixes — any one missing and you'll see drift.** Both live in `AppDelegate.swift`:
+  1. `hostingController.sizingOptions = []` — stops SwiftUI from telling the popover to resize when content height changes (e.g., the inline "Clear completed" button appearing). Without it, NSHostingController auto-propagates `preferredContentSize` and the popover grows/shrinks vertically.
+  2. `statusItem = NSStatusBar.system.statusItem(withLength: Self.statusItemSlotWidth)` — fixed slot width, **never variable, never freeze/restore**. `statusItemSlotWidth` is computed once from font metrics for the worst case (`" " + 20×"W" + "…"`). Why fixed-from-start: any time the slot resizes (variable length + title change, OR freeze-on-open + title change), NSPopover re-anchors to the new bounds and the popover visibly shifts. Live title updates while the popover is open are only safe because the slot can't grow or shrink. Don't reintroduce `NSStatusItem.variableLength` or freeze/restore — it will look like it works until you hit a check/uncheck/reorder that flips the top todo to a different-length title.
+
+`popover.contentSize` should match the SwiftUI root frame (currently 320×380). A mismatch isn't the shifter but leaves dead space inside the popover.
 
 **Menu bar title limit is 20 chars** — 28 chars was too wide; it made the status item push other menu bar icons and destabilized the popover anchor. Keep the limit at 20 in `AppDelegate.updateMenuBarTitle()`.
 

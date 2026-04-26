@@ -3,17 +3,20 @@ import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+    private struct MenuBarState: Equatable {
+        let title: String
+        let toolTip: String?
+    }
+
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
-    private var isReorderingFromPopover = false
-    private var frozenStatusItemLength: CGFloat?
+    private var pendingMenuBarState: MenuBarState?
     let store = TodoStore()
     let settings = AppSettings()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupStatusItem()
         setupPopover()
-        setupObservers()
+        setupStatusItem()
         applyThemeAppearance()
         trackStoreChanges()
         trackSettingsChanges()
@@ -53,12 +56,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard let button = statusItem.button else { return }
         button.action = #selector(togglePopover(_:))
         button.target = self
+        button.imagePosition = .imageLeft
         updateMenuBarTitle()
     }
 
     private func setupPopover() {
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 320, height: 400)
+        popover.contentSize = NSSize(width: 320, height: 380)
         popover.behavior = .transient
         popover.animates = true
         popover.delegate = self
@@ -70,21 +74,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Prevent SwiftUI layout changes from resizing/repositioning the popover.
         hostingController.sizingOptions = []
         popover.contentViewController = hostingController
-    }
-
-    private func setupObservers() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleTodoDragDidStart),
-            name: .todoDragDidStart,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleTodoDragDidEnd),
-            name: .todoDragDidEnd,
-            object: nil
-        )
     }
 
     private func trackStoreChanges() {
@@ -107,23 +96,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     private func updateMenuBarTitle() {
-        let topTodoTitle = store.activeTodos.first?.title
+        let nextState = makeMenuBarState()
+
+        if popover.isShown {
+            pendingMenuBarState = nextState
+            return
+        }
+
+        applyMenuBarState(nextState)
+    }
+
+    private func makeMenuBarState() -> MenuBarState {
+        guard let title = store.activeTodos.first?.title else {
+            return MenuBarState(title: " All done", toolTip: nil)
+        }
+
+        let truncated = title.count > 20 ? String(title.prefix(20)) + "…" : title
+        return MenuBarState(title: " \(truncated)", toolTip: title)
+    }
+
+    private func applyMenuBarState(_ state: MenuBarState) {
         guard let button = statusItem.button else { return }
         let icon = NSImage(systemSymbolName: "checklist", accessibilityDescription: "MenuBard")
         icon?.isTemplate = true
         button.image = icon
-        button.imagePosition = .imageLeft
-
-        guard !isReorderingFromPopover else { return }
-
-        if let title = topTodoTitle {
-            let truncated = title.count > 20 ? String(title.prefix(20)) + "…" : title
-            button.title = " \(truncated)"
-            button.toolTip = title
-        } else {
-            button.title = " All done"
-            button.toolTip = nil
-        }
+        button.title = state.title
+        button.toolTip = state.toolTip
     }
 
     private func applyThemeAppearance() {
@@ -152,43 +150,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func showPopover() {
         guard let button = statusItem.button else { return }
-        freezeStatusItemWidthIfNeeded(using: button)
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        let rightEdge = NSRect(
+            x: button.bounds.width - 1,
+            y: 0,
+            width: 1,
+            height: button.bounds.height
+        )
+        popover.show(relativeTo: rightEdge, of: button, preferredEdge: .minY)
         applyThemeAppearance()
         popover.contentViewController?.view.window?.makeKey()
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    @objc private func handleTodoDragDidStart() {
-        isReorderingFromPopover = true
-    }
-
-    @objc private func handleTodoDragDidEnd() {
-        isReorderingFromPopover = false
-        updateMenuBarTitle()
-    }
-
     func popoverDidClose(_ notification: Notification) {
-        restoreStatusItemWidth()
+        guard let pendingMenuBarState else { return }
+        applyMenuBarState(pendingMenuBarState)
+        self.pendingMenuBarState = nil
     }
-
-    private func freezeStatusItemWidthIfNeeded(using button: NSStatusBarButton) {
-        guard frozenStatusItemLength == nil else { return }
-
-        let measuredWidth = max(button.frame.width, button.intrinsicContentSize.width)
-        frozenStatusItemLength = measuredWidth
-        statusItem.length = measuredWidth
-    }
-
-    private func restoreStatusItemWidth() {
-        guard frozenStatusItemLength != nil else { return }
-        frozenStatusItemLength = nil
-        statusItem.length = NSStatusItem.variableLength
-        updateMenuBarTitle()
-    }
-}
-
-extension Notification.Name {
-    static let todoDragDidStart = Notification.Name("menubard.todoDragDidStart")
-    static let todoDragDidEnd = Notification.Name("menubard.todoDragDidEnd")
 }
