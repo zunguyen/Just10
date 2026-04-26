@@ -122,7 +122,6 @@ struct TodoListView: View {
                             ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
                                 DragRowContainer(
                                     item: item,
-                                    isFirst: index == 0,
                                     isDragged: draggedItemId == item.id,
                                     isReordering: draggedItemId != nil,
                                     isDropTarget: dropIndicator?.itemID == item.id,
@@ -144,6 +143,7 @@ struct TodoListView: View {
                                 .id("completed-\(item.id)")
                             }
                         }
+                        .padding(.top, 6)
                     }
                 }
             }
@@ -237,7 +237,6 @@ struct TodoListView: View {
 
 private struct DragRowContainer: View, Equatable {
     let item: TodoItem
-    let isFirst: Bool
     let isDragged: Bool
     let isReordering: Bool
     let isDropTarget: Bool
@@ -249,7 +248,6 @@ private struct DragRowContainer: View, Equatable {
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.item == rhs.item &&
-        lhs.isFirst == rhs.isFirst &&
         lhs.isDragged == rhs.isDragged &&
         lhs.isReordering == rhs.isReordering &&
         lhs.isDropTarget == rhs.isDropTarget &&
@@ -265,7 +263,6 @@ private struct DragRowContainer: View, Equatable {
             editingItemId: $editingItemId,
             isReordering: isReordering
         )
-        .padding(.top, isFirst ? 6 : 0)
         .opacity(isDragged ? 0.4 : 1.0)
         .overlay(alignment: dropEdge == .before ? .top : .bottom) {
             if isDropTarget { dropIndicatorLine }
