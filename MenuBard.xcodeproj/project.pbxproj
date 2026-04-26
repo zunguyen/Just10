@@ -22,6 +22,7 @@
 		2A00000000000000000014 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000014 /* HotkeyRecorderView.swift */; };
 		2A00000000000000000015 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000015 /* Typography.swift */; };
 		2A00000000000000000016 /* DragSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000016 /* DragSession.swift */; };
+		9B488D9B2F9DDBFA008EA699 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,7 +42,8 @@
 		1A00000000000000000014 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		1A00000000000000000015 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		1A00000000000000000016 /* DragSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragSession.swift; sourceTree = "<group>"; };
-		9A00000000000000000001 /* MenuBard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MenuBard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+			9A00000000000000000001 /* Just10.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Just10.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 				3A00000000000000000004 /* ViewModels */,
 				3A00000000000000000005 /* Views */,
 				3A00000000000000000006 /* Helpers */,
+				9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */,
 			);
 			path = MenuBard;
 			sourceTree = "<group>";
@@ -121,7 +124,7 @@
 		3A00000000000000000007 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9A00000000000000000001 /* MenuBard.app */,
+					9A00000000000000000001 /* Just10.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,7 +132,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6A00000000000000000001 /* MenuBard */ = {
+			6A00000000000000000001 /* MenuBard */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5A00000000000000000002 /* Build configuration list for PBXNativeTarget "MenuBard" */;
 			buildPhases = (
@@ -142,8 +145,8 @@
 			dependencies = (
 			);
 			name = MenuBard;
-			productName = MenuBard;
-			productReference = 9A00000000000000000001 /* MenuBard.app */;
+				productName = Just10;
+				productReference = 9A00000000000000000001 /* Just10.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -184,6 +187,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B488D9B2F9DDBFA008EA699 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +330,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -337,12 +342,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MenuBard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Just10;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -350,7 +357,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zu.just10;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+					PRODUCT_NAME = Just10;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -360,12 +367,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MenuBard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Just10;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -373,7 +384,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zu.just10;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+					PRODUCT_NAME = Just10;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

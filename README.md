@@ -30,6 +30,50 @@ xcodebuild -project MenuBard.xcodeproj -scheme MenuBard -configuration Debug bui
 
 No package dependencies, no SPM, no Tuist, no pre-build steps.
 
+## Release Build
+
+Open Terminal and run these commands from the repository root:
+
+```bash
+cd "/Users/zu/Documents/Works/side projects/menubar-todo"
+```
+
+To produce a distributable `.app` in a predictable place:
+
+```bash
+./scripts/build-release.sh
+```
+
+That copies the Release build to:
+
+```text
+dist/Just10.app
+```
+
+To wrap the app in a `.dmg` for GitHub Releases:
+
+```bash
+./scripts/package-dmg.sh
+```
+
+That produces:
+
+```text
+dist/Just10.dmg
+```
+
+Notes:
+
+- If the shell says `permission denied`, run this once:
+
+```bash
+chmod +x scripts/build-release.sh scripts/package-dmg.sh
+```
+
+- The current build is signed with `Sign to Run Locally`, which is fine for local testing but not for public distribution.
+- For public GitHub Releases, use a Developer ID certificate and notarize the app or the `.dmg`.
+- If you publish an unsigned build, users will hit Gatekeeper warnings and need to use Finder's `Open` flow once.
+
 ## Stack
 
 - SwiftUI + AppKit (`NSStatusItem` / `NSPopover`)
