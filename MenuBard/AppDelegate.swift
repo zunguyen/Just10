@@ -27,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard !settings.hasShownQuitConfirmation else { return .terminateNow }
 
         let alert = NSAlert()
-        alert.messageText = "Quit MenuBard?"
+        alert.messageText = "Quit Jet10?"
         alert.informativeText = "Your todos are saved. You can reopen anytime from Applications."
         alert.alertStyle = .informational
         alert.addButton(withTitle: "Quit")
@@ -117,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func applyMenuBarState(_ state: MenuBarState) {
         guard let button = statusItem.button else { return }
-        let icon = NSImage(systemSymbolName: "checklist", accessibilityDescription: "MenuBard")
+        let icon = NSImage(systemSymbolName: "checklist", accessibilityDescription: "Jet10")
         icon?.isTemplate = true
         button.image = icon
         button.title = state.title

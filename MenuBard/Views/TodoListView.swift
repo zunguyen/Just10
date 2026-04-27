@@ -195,7 +195,7 @@ struct TodoListView: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut("q", modifiers: .command)
-            .accessibilityLabel("Quit MenuBard")
+            .accessibilityLabel("Quit Jet10")
 
             Spacer()
 

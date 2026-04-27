@@ -1,8 +1,11 @@
-# Just10
+# Jet10
 
 A minimalist macOS menu bar todo app. Your most important task is always visible in the menu bar — everything else is one click away.
 
 Built to enforce focus, not accumulate backlog.
+
+![Demo](/img/img1.png)
+![Demo](/img/img2.png)
 
 ## What it does
 
@@ -47,7 +50,7 @@ To produce a distributable `.app` in a predictable place:
 That copies the Release build to:
 
 ```text
-dist/Just10.app
+dist/Jet10.app
 ```
 
 To wrap the app in a `.dmg` for GitHub Releases:
@@ -59,7 +62,7 @@ To wrap the app in a `.dmg` for GitHub Releases:
 That produces:
 
 ```text
-dist/Just10.dmg
+dist/Jet10.dmg
 ```
 
 Notes:
