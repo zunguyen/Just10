@@ -11,7 +11,6 @@ Built to enforce focus, not accumulate backlog.
 
 - Shows the top todo title inline next to the `checklist` icon. You control position 1 by dragging.
 - Hard cap of **10 active todos**. When you hit 10, the app blocks new entries until you complete or delete one.
-- **Completed folder** with its own 10-item cap (FIFO eviction). Not an archive — just recent history.
 - Drag to reorder, click text to edit inline, hover to delete, click checkbox to complete or reactivate.
 - Theme picker (System / Light / Dark), Open at Login toggle.
 
