@@ -38,7 +38,7 @@ No package dependencies, no SPM, no Tuist, no pre-build steps.
 Open Terminal and run these commands from the repository root:
 
 ```bash
-cd "/Users/zu/Documents/Works/side projects/menubar-todo"
+cd /path/to/menubar-todo
 ```
 
 To produce a distributable `.app` in a predictable place:

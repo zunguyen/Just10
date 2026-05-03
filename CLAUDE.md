@@ -18,14 +18,14 @@ There are no tests or linters configured.
 
 ## Architecture
 
-macOS-only menu bar app (no dock icon — `LSUIElement=YES`). SwiftUI lifecycle with an AppKit delegate for the status bar and global hotkey. Minimum target: **macOS 14**.
+macOS-only menu bar app (no dock icon — `LSUIElement=YES`). SwiftUI lifecycle with an AppKit delegate for the status bar. Minimum target: **macOS 14**.
 
 ### State
 
 - `TodoStore` (`@Observable`) — todo CRUD, `activeCap = 10` and `completedCap = 10`. `add(title:) -> Bool` returns `false` when the active cap is reached. `enforceCompletedCap()` runs FIFO eviction in `toggle(_:)` after marking complete. `moveActive(_:by:)` is the keyboard-reorder helper.
-- `AppSettings` (`@Observable`) — `theme`, `hotkey: HotkeyCombo`, `hasShownQuitConfirmation`. Persists each property to `UserDefaults` in its `didSet`.
+- `AppSettings` (`@Observable`) — `theme`, `hasShownQuitConfirmation`. Persists each property to `UserDefaults` in its `didSet`.
 - Both stores are owned by `AppDelegate` and injected into SwiftUI via `.environment(store).environment(settings)`. Read with `@Environment(TodoStore.self)` / `@Environment(AppSettings.self)`. For writable bindings to `AppSettings` properties, use `Bindable(settings).theme` inline (or `@Bindable var settings = settings` in body) — `@Environment` itself doesn't yield bindings.
-- AppDelegate uses `withObservationTracking` (re-registered on each fire) to (a) update the `NSStatusItem` title and (b) re-register the Carbon hot key when `settings.hotkey` changes.
+- AppDelegate uses `withObservationTracking` (re-registered on each fire) to update the `NSStatusItem` title when active todos change, and to re-apply the appearance when `settings.theme` changes.
 - Persistence: `UserDefaults` + `JSONEncoder/JSONDecoder`. No Core Data.
 
 ### View hierarchy

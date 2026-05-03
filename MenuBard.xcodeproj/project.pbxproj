@@ -18,8 +18,6 @@
 		2A00000000000000000010 /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000010 /* TodoListView.swift */; };
 		2A00000000000000000011 /* TodoDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000011 /* TodoDropDelegate.swift */; };
 		2A00000000000000000012 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000012 /* AppSettings.swift */; };
-		2A00000000000000000013 /* GlobalHotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000013 /* GlobalHotkey.swift */; };
-		2A00000000000000000014 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000014 /* HotkeyRecorderView.swift */; };
 		2A00000000000000000015 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000015 /* Typography.swift */; };
 		2A00000000000000000016 /* DragSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000016 /* DragSession.swift */; };
 		9B488D9B2F9DDBFA008EA699 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */; };
@@ -38,8 +36,6 @@
 		1A00000000000000000010 /* TodoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListView.swift; sourceTree = "<group>"; };
 		1A00000000000000000011 /* TodoDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoDropDelegate.swift; sourceTree = "<group>"; };
 		1A00000000000000000012 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		1A00000000000000000013 /* GlobalHotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkey.swift; sourceTree = "<group>"; };
-		1A00000000000000000014 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		1A00000000000000000015 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		1A00000000000000000016 /* DragSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragSession.swift; sourceTree = "<group>"; };
 			9A00000000000000000001 /* Jet10.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jet10.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -106,7 +102,6 @@
 				1A00000000000000000010 /* TodoListView.swift */,
 				1A00000000000000000011 /* TodoDropDelegate.swift */,
 				1A00000000000000000016 /* DragSession.swift */,
-				1A00000000000000000014 /* HotkeyRecorderView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -115,7 +110,6 @@
 			isa = PBXGroup;
 			children = (
 				1A00000000000000000009 /* LoginItemManager.swift */,
-				1A00000000000000000013 /* GlobalHotkey.swift */,
 				1A00000000000000000015 /* Typography.swift */,
 			);
 			path = Helpers;
@@ -209,8 +203,6 @@
 				2A00000000000000000010 /* TodoListView.swift in Sources */,
 				2A00000000000000000011 /* TodoDropDelegate.swift in Sources */,
 				2A00000000000000000012 /* AppSettings.swift in Sources */,
-				2A00000000000000000013 /* GlobalHotkey.swift in Sources */,
-				2A00000000000000000014 /* HotkeyRecorderView.swift in Sources */,
 				2A00000000000000000015 /* Typography.swift in Sources */,
 				2A00000000000000000016 /* DragSession.swift in Sources */,
 			);
