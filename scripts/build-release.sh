@@ -10,7 +10,7 @@ SCHEME="MenuBard"
 
 mkdir -p "$DIST_DIR"
 
-# Resolve the actual built product name (e.g., "Jet10.app") from build settings,
+# Resolve the actual built product name (e.g., "Just10.app") from build settings,
 # so the script stays correct if PRODUCT_NAME changes in the project.
 APP_NAME=$(xcodebuild \
   -project "$PROJECT_PATH" \
@@ -33,10 +33,9 @@ xcodebuild \
   -derivedDataPath "$DERIVED_DATA_PATH" \
   build
 
-APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_SOURCE_PATH/Contents/Info.plist")
-TIMESTAMP=$(date +%Y%m%d-%H%M)
+PACKAGE_DATE=$(date +%d-%m-%y)
 APP_BASENAME="${APP_NAME%.app}"
-STAMP="${APP_VERSION}-${TIMESTAMP}"
+STAMP="$PACKAGE_DATE"
 APP_OUTPUT_PATH="$DIST_DIR/${APP_BASENAME}-${STAMP}.app"
 
 rm -rf "$APP_OUTPUT_PATH"

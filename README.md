@@ -1,4 +1,4 @@
-# Jet10
+# Just10
 
 A minimalist macOS menu bar todo app. Your most important task is always visible in the menu bar — everything else is one click away.
 
@@ -49,7 +49,7 @@ To produce a distributable `.app` in a predictable place:
 That copies the Release build to:
 
 ```text
-dist/Jet10.app
+dist/Just10-DD-MM-YY.app
 ```
 
 To wrap the app in a `.dmg` for GitHub Releases:
@@ -61,8 +61,10 @@ To wrap the app in a `.dmg` for GitHub Releases:
 That produces:
 
 ```text
-dist/Jet10.dmg
+dist/Just10-DD-MM-YY.dmg
 ```
+
+The date uses dashes because `/` is a path separator in macOS filenames.
 
 Notes:
 

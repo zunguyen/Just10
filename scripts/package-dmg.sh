@@ -17,9 +17,9 @@ if [[ ! -d "$APP_PATH" ]]; then
   APP_PATH="$(cat "$LAST_BUILD_FILE")"
 fi
 
-# Reuse the .app's stamp (e.g. "Jet10-1.0-20260428-1430") for the .dmg name.
+# Reuse the .app's stamp (e.g. "Just10-17-05-26") for the .dmg name.
 APP_BASENAME="$(basename "$APP_PATH" .app)"
-APP_BUNDLE_NAME="${APP_BASENAME%%-*}.app"   # strip "-<version>-<timestamp>" → "Jet10.app"
+APP_BUNDLE_NAME="${APP_BASENAME%%-*}.app"   # strip "-<date>" -> "Just10.app"
 DMG_NAME="${DMG_NAME:-${APP_BASENAME}.dmg}"
 DMG_PATH="$DIST_DIR/$DMG_NAME"
 
@@ -31,7 +31,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-# Inside the DMG the bundle keeps the canonical name (e.g. "Jet10.app") so it
+# Inside the DMG the bundle keeps the canonical name (e.g. "Just10.app") so it
 # installs to /Applications/<name>.app, not /Applications/<name>-<version>.app.
 ditto "$APP_PATH" "$STAGING_DIR/$APP_BUNDLE_NAME"
 ln -s /Applications "$STAGING_DIR/Applications"

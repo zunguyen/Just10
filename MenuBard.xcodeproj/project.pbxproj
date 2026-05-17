@@ -20,7 +20,9 @@
 		2A00000000000000000012 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000012 /* AppSettings.swift */; };
 		2A00000000000000000015 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000015 /* Typography.swift */; };
 		2A00000000000000000016 /* DragSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000016 /* DragSession.swift */; };
+		2A00000000000000000017 /* TodoTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000000000000000017 /* TodoTextEditor.swift */; };
 		9B488D9B2F9DDBFA008EA699 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */; };
+		9B6BE50C2FB9E8C100A1B753 /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B6BE50B2FB9E8C100A1B753 /* Color+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +40,10 @@
 		1A00000000000000000012 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		1A00000000000000000015 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		1A00000000000000000016 /* DragSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragSession.swift; sourceTree = "<group>"; };
-			9A00000000000000000001 /* Jet10.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jet10.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A00000000000000000017 /* TodoTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoTextEditor.swift; sourceTree = "<group>"; };
+		9A00000000000000000001 /* Just10.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Just10.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B488D9A2F9DDBFA008EA699 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9B6BE50B2FB9E8C100A1B753 /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +106,7 @@
 				1A00000000000000000010 /* TodoListView.swift */,
 				1A00000000000000000011 /* TodoDropDelegate.swift */,
 				1A00000000000000000016 /* DragSession.swift */,
+				1A00000000000000000017 /* TodoTextEditor.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -109,6 +114,7 @@
 		3A00000000000000000006 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				9B6BE50B2FB9E8C100A1B753 /* Color+Extensions.swift */,
 				1A00000000000000000009 /* LoginItemManager.swift */,
 				1A00000000000000000015 /* Typography.swift */,
 			);
@@ -118,7 +124,7 @@
 		3A00000000000000000007 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-					9A00000000000000000001 /* Jet10.app */,
+				9A00000000000000000001 /* Just10.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,7 +132,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-			6A00000000000000000001 /* MenuBard */ = {
+		6A00000000000000000001 /* MenuBard */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5A00000000000000000002 /* Build configuration list for PBXNativeTarget "MenuBard" */;
 			buildPhases = (
@@ -139,8 +145,8 @@
 			dependencies = (
 			);
 			name = MenuBard;
-				productName = Jet10;
-				productReference = 9A00000000000000000001 /* Jet10.app */;
+			productName = Just10;
+			productReference = 9A00000000000000000001 /* Just10.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -197,6 +203,7 @@
 				2A00000000000000000003 /* TodoItem.swift in Sources */,
 				2A00000000000000000004 /* TodoStore.swift in Sources */,
 				2A00000000000000000005 /* ContentView.swift in Sources */,
+				9B6BE50C2FB9E8C100A1B753 /* Color+Extensions.swift in Sources */,
 				2A00000000000000000006 /* TodoRowView.swift in Sources */,
 				2A00000000000000000008 /* SettingsView.swift in Sources */,
 				2A00000000000000000009 /* LoginItemManager.swift in Sources */,
@@ -205,6 +212,7 @@
 				2A00000000000000000012 /* AppSettings.swift in Sources */,
 				2A00000000000000000015 /* Typography.swift in Sources */,
 				2A00000000000000000016 /* DragSession.swift in Sources */,
+				2A00000000000000000017 /* TodoTextEditor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,7 +349,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MenuBard/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Jet10;
+				INFOPLIST_KEY_CFBundleDisplayName = "Just 10";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -349,7 +357,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zu.just10;
-					PRODUCT_NAME = Jet10;
+				PRODUCT_NAME = Just10;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -368,7 +376,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MenuBard/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Jet10;
+				INFOPLIST_KEY_CFBundleDisplayName = "Just 10";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -376,7 +384,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zu.just10;
-					PRODUCT_NAME = Jet10;
+				PRODUCT_NAME = Just10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

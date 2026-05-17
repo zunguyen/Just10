@@ -2,20 +2,34 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private enum Layout {
+        static let panelSize = NSSize(width: 300, height: 460)
+        static let panelScreenInset: CGFloat = 8
+        static let panelTopGap: CGFloat = 8
+    }
+
+    private enum MenuBarIcon {
+        static let size = NSSize(width: 18, height: 18)
+        static let frameCount = 6
+        static let frameDuration: TimeInterval = 0.045
+    }
+
     private struct MenuBarState: Equatable {
         let title: String
         let toolTip: String?
     }
 
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    private var panel: TodoPanel!
     private var pendingMenuBarState: MenuBarState?
+    private var menuBarIconTimer: Timer?
+    private var menuBarIconFrameIndex = 0
     let store = TodoStore()
     let settings = AppSettings()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupPopover()
+        setupPanel()
         setupStatusItem()
         applyThemeAppearance()
         trackStoreChanges()
@@ -27,7 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard !settings.hasShownQuitConfirmation else { return .terminateNow }
 
         let alert = NSAlert()
-        alert.messageText = "Quit Jet10?"
+        alert.messageText = "Quit Just 10?"
         alert.informativeText = "Your todos are saved. You can reopen anytime from Applications."
         alert.alertStyle = .informational
         alert.addButton(withTitle: "Quit")
@@ -49,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
-    // MARK: - Status item & popover
+    // MARK: - Status item & panel
 
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -57,23 +71,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         button.action = #selector(togglePopover(_:))
         button.target = self
         button.imagePosition = .imageLeft
+        button.image = makeMenuBarIcon(progress: 1)
         updateMenuBarTitle()
     }
 
-    private func setupPopover() {
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 320, height: 380)
-        popover.behavior = .transient
-        popover.animates = true
-        popover.delegate = self
+    private func setupPanel() {
+        panel = TodoPanel(
+            contentRect: NSRect(origin: .zero, size: Layout.panelSize),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hasShadow = true
+        panel.level = .popUpMenu
+        panel.collectionBehavior = [.transient, .ignoresCycle]
+        panel.onClose = { [weak self] in
+            self?.panelDidClose()
+        }
         let hostingController = NSHostingController(
             rootView: ContentView()
                 .environment(store)
                 .environment(settings)
         )
-        // Prevent SwiftUI layout changes from resizing/repositioning the popover.
         hostingController.sizingOptions = []
-        popover.contentViewController = hostingController
+        panel.contentViewController = hostingController
     }
 
     private func trackStoreChanges() {
@@ -98,7 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func updateMenuBarTitle() {
         let nextState = makeMenuBarState()
 
-        if popover.isShown {
+        if panel.isVisible {
             pendingMenuBarState = nextState
             return
         }
@@ -111,17 +134,95 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             return MenuBarState(title: " All done", toolTip: nil)
         }
 
-        let truncated = title.count > 20 ? String(title.prefix(20)) + "…" : title
+        let menuTitle = title.replacingOccurrences(of: "\n", with: " ")
+        let truncated = menuTitle.count > 20 ? String(menuTitle.prefix(20)) + "…" : menuTitle
         return MenuBarState(title: " \(truncated)", toolTip: title)
     }
 
     private func applyMenuBarState(_ state: MenuBarState) {
         guard let button = statusItem.button else { return }
-        let icon = NSImage(systemSymbolName: "checklist", accessibilityDescription: "Jet10")
-        icon?.isTemplate = true
-        button.image = icon
+        let shouldAnimate = button.title != state.title && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+
+        button.image = makeMenuBarIcon(progress: 1)
         button.title = state.title
         button.toolTip = state.toolTip
+
+        if shouldAnimate {
+            animateMenuBarIcon()
+        } else {
+            button.image = makeMenuBarIcon(progress: 1)
+        }
+    }
+
+    private func animateMenuBarIcon() {
+        menuBarIconTimer?.invalidate()
+        menuBarIconFrameIndex = 0
+
+        menuBarIconTimer = Timer.scheduledTimer(withTimeInterval: MenuBarIcon.frameDuration, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self, let button = self.statusItem.button else {
+                    timer.invalidate()
+                    return
+                }
+
+                let progress = CGFloat(self.menuBarIconFrameIndex) / CGFloat(MenuBarIcon.frameCount - 1)
+                button.image = self.makeMenuBarIcon(progress: progress)
+
+                if self.menuBarIconFrameIndex >= MenuBarIcon.frameCount - 1 {
+                    timer.invalidate()
+                    self.menuBarIconTimer = nil
+                } else {
+                    self.menuBarIconFrameIndex += 1
+                }
+            }
+        }
+    }
+
+    private func makeMenuBarIcon(progress: CGFloat) -> NSImage {
+        let clampedProgress = min(max(progress, 0), 1)
+        let image = NSImage(size: MenuBarIcon.size)
+        image.lockFocus()
+
+        NSColor.labelColor.setStroke()
+        NSColor.labelColor.setFill()
+
+        let circleRect = NSRect(x: 2.5, y: 2.5, width: 13, height: 13)
+        let circlePath = NSBezierPath(ovalIn: circleRect)
+        circlePath.lineWidth = 1.8
+        circlePath.stroke()
+
+        let checkPath = NSBezierPath()
+        checkPath.lineWidth = 2
+        checkPath.lineCapStyle = .round
+        checkPath.lineJoinStyle = .round
+
+        let start = NSPoint(x: 6, y: 8.6)
+        let mid = NSPoint(x: 8, y: 6.4)
+        let end = NSPoint(x: 12.2, y: 11.4)
+
+        if clampedProgress <= 0.45 {
+            let segmentProgress = clampedProgress / 0.45
+            checkPath.move(to: start)
+            checkPath.line(to: interpolate(from: start, to: mid, progress: segmentProgress))
+        } else {
+            let segmentProgress = (clampedProgress - 0.45) / 0.55
+            checkPath.move(to: start)
+            checkPath.line(to: mid)
+            checkPath.line(to: interpolate(from: mid, to: end, progress: segmentProgress))
+        }
+
+        checkPath.stroke()
+        image.unlockFocus()
+        image.isTemplate = true
+        image.accessibilityDescription = "Just 10"
+        return image
+    }
+
+    private func interpolate(from start: NSPoint, to end: NSPoint, progress: CGFloat) -> NSPoint {
+        NSPoint(
+            x: start.x + (end.x - start.x) * progress,
+            y: start.y + (end.y - start.y) * progress
+        )
     }
 
     private func applyThemeAppearance() {
@@ -136,35 +237,67 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
 
         NSApp.appearance = appearance
-        popover.contentViewController?.view.appearance = appearance
-        popover.contentViewController?.view.window?.appearance = appearance
+        panel.contentViewController?.view.appearance = appearance
+        panel.appearance = appearance
     }
 
     @objc private func togglePopover(_ sender: NSStatusBarButton) {
-        if popover.isShown {
-            popover.performClose(nil)
+        if panel.isVisible {
+            closePanel()
         } else {
-            showPopover()
+            showPanel()
         }
     }
 
-    private func showPopover() {
-        guard let button = statusItem.button else { return }
-        let rightEdge = NSRect(
-            x: button.bounds.width - 1,
-            y: 0,
-            width: 1,
-            height: button.bounds.height
+    private func showPanel() {
+        guard
+            let button = statusItem.button,
+            let buttonWindow = button.window
+        else { return }
+
+        let buttonRect = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+        let screenFrame = buttonWindow.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
+        let x = min(
+            max(buttonRect.maxX - Layout.panelSize.width, screenFrame.minX + Layout.panelScreenInset),
+            screenFrame.maxX - Layout.panelSize.width - Layout.panelScreenInset
         )
-        popover.show(relativeTo: rightEdge, of: button, preferredEdge: .minY)
+        let y = max(
+            buttonRect.minY - Layout.panelSize.height - Layout.panelTopGap,
+            screenFrame.minY + Layout.panelScreenInset
+        )
+
+        panel.setFrame(NSRect(x: x, y: y, width: Layout.panelSize.width, height: Layout.panelSize.height), display: true)
+        panel.makeKeyAndOrderFront(nil)
         applyThemeAppearance()
-        popover.contentViewController?.view.window?.makeKey()
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    func popoverDidClose(_ notification: Notification) {
+    private func closePanel() {
+        panel.orderOut(nil)
+        panelDidClose()
+    }
+
+    private func panelDidClose() {
         guard let pendingMenuBarState else { return }
         applyMenuBarState(pendingMenuBarState)
         self.pendingMenuBarState = nil
+    }
+}
+
+private final class TodoPanel: NSPanel {
+    var onClose: (() -> Void)?
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+
+    override func resignKey() {
+        super.resignKey()
+        orderOut(nil)
+        onClose?()
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        orderOut(nil)
+        onClose?()
     }
 }

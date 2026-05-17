@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "6A00000000000000000001"
-               BuildableName = "Jet10.app"
+               BuildableName = "Just10.app"
                BlueprintName = "MenuBard"
                ReferencedContainer = "container:MenuBard.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6A00000000000000000001"
-            BuildableName = "Jet10.app"
+            BuildableName = "Just10.app"
             BlueprintName = "MenuBard"
             ReferencedContainer = "container:MenuBard.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6A00000000000000000001"
-            BuildableName = "Jet10.app"
+            BuildableName = "Just10.app"
             BlueprintName = "MenuBard"
             ReferencedContainer = "container:MenuBard.xcodeproj">
          </BuildableReference>

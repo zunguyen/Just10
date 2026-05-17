@@ -1,7 +1,15 @@
 import SwiftUI
 
 struct TodoListView: View {
+    private enum Layout {
+        static let outerPadding: CGFloat = 4
+        static let cardRadius: CGFloat = 10
+        static let inputHeight: CGFloat = 56
+        static let inputVerticalPadding: CGFloat = 14
+    }
+
     @Environment(TodoStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onSettings: () -> Void
 
     @State private var newTodoText = ""
@@ -9,7 +17,7 @@ struct TodoListView: View {
     @State private var editingItemId: UUID?
     @State private var showCapWarning = false
     @State private var isConfirmingClearCompleted = false
-    @FocusState private var isTextFieldFocused: Bool
+    @State private var isTextFieldFocused = false
 
     private var activeCount: Int { store.activeTodos.count }
     private var atCap: Bool { store.isAtActiveCap }
@@ -17,19 +25,18 @@ struct TodoListView: View {
     private var hasCompleted: Bool { !store.completedTodos.isEmpty }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 4) {
+            header
             addField
             if showCapWarning {
                 capMessage
             }
-            Divider().opacity(0.5)
             todoList
-            if hasCompleted {
-                clearCompletedButton
-            }
-            Divider().opacity(0.5)
-            footer
         }
+        .padding(.horizontal, Layout.outerPadding)
+        .padding(.top, Layout.outerPadding)
+        .padding(.bottom, Layout.outerPadding)
+        .background(Color.appBackground)
         .onAppear { isTextFieldFocused = true }
         .onChange(of: activeCount) { _, newCount in
             if newCount < TodoStore.activeCap, showCapWarning {
@@ -39,13 +46,6 @@ struct TodoListView: View {
         .onChange(of: hasCompleted) { _, nowHasCompleted in
             if !nowHasCompleted { isConfirmingClearCompleted = false }
         }
-        // Defensive: clear editingItemId if the edited item leaves activeTodos
-        // (toggled to completed, deleted, evicted). Without this, the next time
-        // that item returns to active (e.g., un-checked) the new TodoRowView
-        // sees editingItemId == item.id and renders a TextField with the fresh
-        // empty @State editText — visually a checkbox with no text.
-        // Reproduces only when SwiftUI's @FocusState onChange doesn't fire
-        // during view destruction (intermittent).
         .onChange(of: store.activeTodos) { _, newActive in
             guard let editingId = editingItemId else { return }
             if !newActive.contains(where: { $0.id == editingId }) {
@@ -60,31 +60,58 @@ struct TodoListView: View {
         }
     }
 
-    private var addField: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "plus")
-                .foregroundStyle(.secondary)
-                .font(.system(size: 14))
-                .accessibilityHidden(true)
-            TextField(addPlaceholder, text: $newTodoText)
-                .textFieldStyle(.plain)
-                .font(Typography.body)
-                .focused($isTextFieldFocused)
-                .onSubmit { addTodo() }
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("Just 10")
+                .font(Typography.title)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Button(action: onSettings) {
+                Image(systemName: "gearshape")
+                    .font(Typography.titleIcon)
+                    .foregroundStyle(.primary)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Settings")
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 8)
+    }
+
+    private var addField: some View {
+        TodoTextEditor(
+            text: $newTodoText,
+            isFocused: $isTextFieldFocused,
+            placeholder: addPlaceholder,
+            verticalTextInset: 5,
+            onCommit: addTodo
+        )
+        .frame(height: 28)
         .padding(.horizontal, 12)
-        .padding(.vertical, 12)
+        .padding(.vertical, Layout.inputVerticalPadding)
+        .frame(height: Layout.inputHeight)
+        .background {
+            RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous)
+                .fill(Color(nsColor: .textBackgroundColor))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous)
+                .stroke(Color(nsColor: .separatorColor), lineWidth: isTextFieldFocused ? 1.2 : 0.8)
+        }
     }
 
     private var addPlaceholder: String {
-        atCap ? "List full · complete one to continue" : "Add a todo…"
+        atCap ? "List full · complete one to continue" : "Add to do"
     }
 
     private var capMessage: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
-                .font(.system(size: 13))
+                .font(Typography.bodyIcon)
                 .accessibilityHidden(true)
             Text("You've reached \(TodoStore.activeCap) todos. Complete or delete one to add more.")
                 .font(Typography.secondary)
@@ -93,7 +120,6 @@ struct TodoListView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .padding(.bottom, 8)
         .transition(.opacity)
     }
 
@@ -118,33 +144,54 @@ struct TodoListView: View {
                         .onTapGesture { clearEditingAndSelection() }
 
                     ScrollView {
-                        VStack(spacing: 0) {
-                            ForEach(Array(activeTodos.enumerated()), id: \.element.id) { index, item in
-                                DragRowContainer(
-                                    item: item,
-                                    isDragged: draggedItemId == item.id,
-                                    isReordering: draggedItemId != nil,
-                                    isDropTarget: dropIndicator?.itemID == item.id,
-                                    dropEdge: dropIndicator?.itemID == item.id ? dropIndicator?.edge : nil,
-                                    dragSession: dragSession,
-                                    editingItemId: $editingItemId,
-                                    store: store,
-                                    onStartDrag: clearEditingAndSelection
-                                )
-                                .equatable()
-                                .id("active-\(item.id)")
+                        VStack(spacing: 14) {
+                            if !activeTodos.isEmpty {
+                                VStack(spacing: 0) {
+                                    ForEach(Array(activeTodos.enumerated()), id: \.element.id) { _, item in
+                                        DragRowContainer(
+                                            item: item,
+                                            isDragged: draggedItemId == item.id,
+                                            isReordering: draggedItemId != nil,
+                                            isDropTarget: dropIndicator?.itemID == item.id,
+                                            dropEdge: dropIndicator?.itemID == item.id ? dropIndicator?.edge : nil,
+                                            dragSession: dragSession,
+                                            editingItemId: $editingItemId,
+                                            store: store,
+                                            onStartDrag: clearEditingAndSelection
+                                        )
+                                        .equatable()
+                                        .id("active-\(item.id)")
+                                    }
+                                }
+                                .padding(.vertical, 14)
+                                .background {
+                                    RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous)
+                                        .fill(Color(nsColor: .textBackgroundColor))
+                                }
+                                .clipShape(RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous)
+                                        .stroke(Color(nsColor: .separatorColor), lineWidth: 0.8)
+                                }
                             }
-                            ForEach(completedTodos) { item in
-                                TodoRowView(
-                                    item: item,
-                                    onToggle: { store.toggle(item) },
-                                    onDelete: { store.delete(item) }
-                                )
-                                .id("completed-\(item.id)")
+
+                            if !completedTodos.isEmpty {
+                                VStack(spacing: 4) {
+                                    ForEach(completedTodos) { item in
+                                        TodoRowView(
+                                            item: item,
+                                            onToggle: { store.toggle(item) },
+                                            onDelete: { store.delete(item) }
+                                        )
+                                        .id("completed-\(item.id)")
+                                    }
+                                }
                             }
                         }
-                        .padding(.top, 6)
+                        .padding(.top, 0)
+                        .padding(.bottom, 2)
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous))
                 }
             }
         }
@@ -171,7 +218,7 @@ struct TodoListView: View {
             .padding(.vertical, 6)
         } else {
             Button("Clear completed") {
-                withAnimation(.easeInOut(duration: 0.15)) { isConfirmingClearCompleted = true }
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.15)) { isConfirmingClearCompleted = true }
             }
             .font(Typography.secondary)
             .foregroundStyle(.secondary)
@@ -195,7 +242,7 @@ struct TodoListView: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut("q", modifiers: .command)
-            .accessibilityLabel("Quit Jet10")
+            .accessibilityLabel("Quit Just 10")
 
             Spacer()
 
@@ -209,7 +256,7 @@ struct TodoListView: View {
             Button(action: onSettings) {
                 Image(systemName: "gearshape")
                     .foregroundStyle(.secondary)
-                    .font(.system(size: 15))
+                    .font(Typography.bodyIcon)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Settings")
@@ -219,13 +266,14 @@ struct TodoListView: View {
     }
 
     private func addTodo() {
-        let trimmed = newTodoText.trimmingCharacters(in: .whitespaces)
+        let trimmed = normalizedTodoTitle(newTodoText)
         guard !trimmed.isEmpty else { return }
         if store.add(title: trimmed) {
             newTodoText = ""
+            isTextFieldFocused = true
             showCapWarning = false
         } else {
-            withAnimation(.easeInOut(duration: 0.15)) { showCapWarning = true }
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.15)) { showCapWarning = true }
         }
     }
 
@@ -233,6 +281,12 @@ struct TodoListView: View {
         editingItemId = nil
     }
 
+    private func normalizedTodoTitle(_ title: String) -> String {
+        title
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 private struct DragRowContainer: View, Equatable {
@@ -260,17 +314,17 @@ private struct DragRowContainer: View, Equatable {
             onToggle: { store.toggle(item) },
             onDelete: { store.delete(item) },
             onEdit: { newTitle in store.update(item, title: newTitle) },
+            onDragProvider: {
+                onStartDrag()
+                dragSession.draggedItemId = item.id
+                return NSItemProvider(object: item.id.uuidString as NSString)
+            },
             editingItemId: $editingItemId,
             isReordering: isReordering
         )
         .opacity(isDragged ? 0.4 : 1.0)
         .overlay(alignment: dropEdge == .before ? .top : .bottom) {
             if isDropTarget { dropIndicatorLine }
-        }
-        .onDrag {
-            onStartDrag()
-            dragSession.draggedItemId = item.id
-            return NSItemProvider(object: item.id.uuidString as NSString)
         }
         .onDrop(
             of: [.plainText],
