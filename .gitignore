@@ -40,3 +40,5 @@ Carthage/Build/
 *.swp
 *.swo
 *~
+/dist
+dist/
